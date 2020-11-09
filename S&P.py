@@ -17,4 +17,5 @@ import pandas as pd
 warnings.filterwarnings("ignore")
 
 if __name__ == "__main__":
-    print('Done!')
+    print("Started!")
+    print("Done!")
