@@ -18,42 +18,96 @@ warnings.filterwarnings("ignore")
 
 STOCK_API_URL = "https://api.twelvedata.com/"
 STOCK_API_KEY = "e763a45b79a14e99983d22e08b10331a"
+DATE_FORMAT = "%Y-%m-%d"
+TODAY = datetime.datetime.today()
+STOCK_START_DATE = (TODAY - datetime.timedelta(days=540)).strftime(DATE_FORMAT)
+STOCK_END_DATE = (TODAY + datetime.timedelta(days=1)).strftime(DATE_FORMAT)
+df = pd.read_csv('ARK_Log.csv')
+df = df.drop_duplicates()
 
 def getStockData(symbol, interval, start, end):
-    apiParams = {'format':"JSON", 'symbol':symbol,'apikey':STOCK_API_KEY, 'interval':interval, 'start_date':start, 'end_date':end}    
+    apiParams = {
+        'format':"JSON",
+        'symbol':symbol,
+        'apikey':STOCK_API_KEY,
+        'interval':interval,
+        'end_date':end
+    }
+
+    if start is not None:
+        apiParams['start_date'] = start
+    
     apiURL = STOCK_API_URL + "time_series?"
     resp = requests.get(url=apiURL, params=apiParams, verify=False);
     stockResp = resp.json()
 
-    stockData = []
-    stockVol = []
+    stockClose = []
+    stockDate = []
     if stockResp['status'] == 'ok':
         for values in stockResp['values']:
-            stockData.insert(0, float(values['close']))
-            stockVol.insert(0, int(values['volume']))
+            stockClose.insert(0, float(values['close']))
+            stockDate.insert(0, datetime.datetime.strptime(values['datetime'], DATE_FORMAT))
 
-    return  np.asarray(stockData), np.asarray(stockVol)
+    return  stockClose, stockDate
 
-def drawGraph(title, data, vol):
-    fig, (ax1, ax2) = plt.subplots(1, 2)
+def drawGraph(symbol, newStock):
+    stockValues, stockDate = (getStockData(symbol, "1day", (None if newStock else STOCK_START_DATE), STOCK_END_DATE))
+    
+    tmpDF = df[df['stock'] == symbol]
+
+    fig, ax, = plt.subplots()
     fig.set_size_inches(17,8)
+    formatter = mdates.DateFormatter("%Y-%m-%d")
+    ax.xaxis.set_major_formatter(formatter)
+    ax.set_xlabel('Time', fontsize=13)
+    ax.set_ylabel('Price', fontsize=13)
+    ax.set_title(symbol + ' Stock Market', fontsize=20)
+    ax.plot_date(stockDate, stockValues, 'r-')
 
-    ax1.plot(list(range(0, len(data))), data, 'r-')
-    ax2.set_xlabel('Day')
-    ax2.set_ylabel('Price')
-    
-    ax2.plot(list(range(0, len(vol))), vol, 'g-')
-    ax2.set_xlabel('Day')
-    ax2.set_ylabel('Volume')
-    
+    for index, row in tmpDF.iterrows():
+        operation = row['operation']
+        annotate_date = datetime.datetime.strptime(row['date'], DATE_FORMAT)
+        if annotate_date not in stockDate:
+            continue
+        index = stockDate.index(annotate_date)
+        annotate_value = stockValues[index]
+        ax.annotate(operation, (
+            annotate_date, annotate_value),
+            xytext=(15, 15), 
+            textcoords='offset points',
+            bbox=dict(boxstyle="round", edgecolor='green' if operation == 'Buy' else 'red', fc="0.8"),
+            arrowprops=dict(arrowstyle='-|>'))
+     
+    fig.autofmt_xdate()
     fmt = mplcursors.cursor(hover=True)
     plt.show()
-    
+
 if __name__ == "__main__":
-    compareSymbol = "AMD"
-    compareData, compareVol = (getStockData(compareSymbol, "1day", "2016-11-10", "2020-11-11"))
-    compareVol = compareVol / 10000
-    drawGraph(compareSymbol + ' Graph', compareData, compareVol)
+    while True:
+        userInput = input("@:")
+        userInput = userInput.split(' ')
+        
+        if userInput[0] == 'list':
+            print(df.stock.unique())
+            
+        elif userInput[0] == 'stock':
+            if userInput[1] in df.stock.unique():
+                drawGraph(userInput[1], False)
+            else:
+                print('Stock not found!')
+
+        elif userInput[0] == 'new':
+            if userInput[1] in df.stock.unique():
+                drawGraph(userInput[1], True)
+            else:
+                print('Stock not found!')
+                
+        elif userInput[0] == 'q':
+            break
+            
+    
+    
+    
     
 
 
