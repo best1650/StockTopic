@@ -5,6 +5,10 @@ df = pd.read_excel('ARK.xlsx', index_col=None)
 date = []
 stock = []
 operation = []
+
+print(df.head())
+
+'''
 for index, row in df.iterrows():
     opText = row['Observation for period']
     if 'Bought' in opText or 'Entered new position' in opText:
@@ -24,4 +28,5 @@ df_2 = pd.read_csv('ARK_Log.csv', index_col=None)
 df_3 = pd.concat([df_1, df_2])
 
 df_3.to_csv('ARK_Log_1.csv', index=False)
+'''
 
