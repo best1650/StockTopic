@@ -91,13 +91,13 @@ if __name__ == "__main__":
             print(df.stock.unique())
             
         elif userInput[0] == 'stock':
-            if userInput[1] in df.stock.unique():
+            if userInput[1].upper() in df.stock.unique():
                 drawGraph(userInput[1].upper(), False)
             else:
                 print('Stock not found!')
 
         elif userInput[0] == 'new':
-            if userInput[1] in df.stock.unique():
+            if userInput[1].upper() in df.stock.unique():
                 drawGraph(userInput[1].upper(), True)
             else:
                 print('Stock not found!')
