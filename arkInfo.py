@@ -13,6 +13,7 @@ import mplcursors
 import json
 import warnings
 import pandas as pd
+import webbrowser
 
 warnings.filterwarnings("ignore")
 
@@ -102,10 +103,14 @@ if __name__ == "__main__":
             else:
                 print('Stock not found!')
                 
+        elif userInput[0] == 'web':
+            if userInput[1].upper() in df.stock.unique():
+                webbrowser.open("https://finance.yahoo.com/quote/" + userInput[1].upper())
+            else:
+                print('Stock not found!')
+            
         elif userInput[0] == 'q':
             break
-            
-    
     
     
     
