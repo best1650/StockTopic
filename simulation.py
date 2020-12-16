@@ -92,13 +92,13 @@ if __name__ == "__main__":
             
         elif userInput[0] == 'stock':
             if userInput[1] in df.stock.unique():
-                drawGraph(userInput[1], False)
+                drawGraph(userInput[1].upper(), False)
             else:
                 print('Stock not found!')
 
         elif userInput[0] == 'new':
             if userInput[1] in df.stock.unique():
-                drawGraph(userInput[1], True)
+                drawGraph(userInput[1].upper(), True)
             else:
                 print('Stock not found!')
                 
