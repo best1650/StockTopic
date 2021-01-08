@@ -25,6 +25,7 @@ STOCK_START_DATE = (TODAY - datetime.timedelta(days=540)).strftime(DATE_FORMAT)
 STOCK_END_DATE = (TODAY + datetime.timedelta(days=1)).strftime(DATE_FORMAT)
 df = pd.read_csv('ARK_Log.csv')
 df = df.drop_duplicates()
+df = df.sort_values(by=['date'])
 
 def getStockData(symbol, interval, start, end):
     apiParams = {
@@ -89,8 +90,16 @@ if __name__ == "__main__":
         userInput = userInput.split(' ')
         
         if userInput[0] == 'list':
-            print(df.stock.unique())
+            tmpDf = df[df['operation'] == 'Buy']
             
+            if len(userInput) == 2:
+                print(tmpDf[tmpDf['date'] == userInput[1]].stock.unique())
+            else:
+                print(tmpDf.stock.unique())
+
+        elif userInput[0] == 'date':
+            print(df.date.unique()[-10:])
+        
         elif userInput[0] == 'stock':
             if userInput[1].upper() in df.stock.unique():
                 drawGraph(userInput[1].upper(), False)
